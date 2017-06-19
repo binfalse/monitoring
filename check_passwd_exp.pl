@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 # Copyright (C) 2017 Martin Scharm <https://binfalse.de/contact/>
+#
+# This file is part of bf-monitoring.
+# <https://binfalse.de/software/nagios/>
+# <https://github.com/binfalse/monitoring>
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
