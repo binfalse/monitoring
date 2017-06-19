@@ -44,8 +44,8 @@ sub ymd {
 sub usage {
 	my $msg = shift;
 	print $msg . "\n" if $msg;
-	print "Usage: $0 --ldapserver <LDAP SERVER> --ldapbase <LDAP BASE DN> [--warning <DAYS BEFORE PW EXPIRES>] [--critical <DAYS BEFORE PW EXPIRES>]\n";
-	print "		warning and critical in seconds!\n";
+	print "Usage: $0 --ldapserver <LDAP SERVER> --ldapbase <LDAP BASE DN> [--max-age <SECONDS>] [--warning <SECONDS>] [--critical <SECONDS>]\n";
+	print "		max-age in seconds as configured in your institution, defaults to 999*24*60*60 (999 days)\n";
 	print "		warning defaults to 30*24*60*60 (30 days)\n";
 	print "		critical defaults to 5*24*60*60 (5 days)\n";
 	exit 23;
@@ -54,6 +54,7 @@ sub usage {
 
 my $warning = 30*24*60*60;
 my $critical = 5*24*60*60;
+my $maxage = 999*24*60*60;
 my $ldapserver = "";
 my $ldapbase = "";
 
@@ -61,6 +62,7 @@ my $ldapbase = "";
 GetOptions (
         "ldapserver|s=s" => \$ldapserver,
         "ldapbase|b=s"   => \$ldapbase,
+        "max-age|m=s"   => \$maxage,
         "warning|w:i"  => \$warning,
         "critical|c:i"  => \$critical)
 or usage ("Error in command line arguments\n");
@@ -86,7 +88,7 @@ my $serious = 1;
 
 foreach my $entry ($result->entries) {
 	my $pwd_age = time() - ldap_to_unix_time ($entry->get_value("PWDLASTSET"));
-	my $last_day = ldap_to_unix_time ($entry->get_value("PWDLASTSET")) + 999 * 24 * 60 * 60;
+	my $last_day = ldap_to_unix_time ($entry->get_value("PWDLASTSET")) + $maxage;
 	my $time_left = $last_day - time();
 	if ($time_left > $warning) {
 		$ok{$entry->get_value("PWDLASTSET")} = sprintf ("%s: %s left (%s) ", $entry->get_value("gecos"), get_days ($time_left), ymd ($last_day));
