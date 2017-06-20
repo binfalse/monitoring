@@ -25,6 +25,8 @@ use warnings;
 use Net::LDAP;
 use Getopt::Long;
 
+
+
 sub get_days {
 	my $seconds = shift;
 	return int($seconds/(24*60*60)) . "d";
@@ -33,6 +35,11 @@ sub get_days {
 sub ldap_to_unix_time {
 	my $ldap = shift;
 	return $ldap / 10000000 - ((1970 - 1601) * 365 - 3 + (1970 - 1601) / 4) * 86400;
+}
+
+sub unix_to_ldap_time {
+	my $unix = shift;
+	return ($unix + ((1970 - 1601) * 365 - 3 + (1970 - 1601) / 4) * 86400) * 10000000;
 }
 
 sub ymd {
@@ -89,13 +96,20 @@ my $serious = 1;
 foreach my $entry ($result->entries) {
 	my $pwd_age = time() - ldap_to_unix_time ($entry->get_value("PWDLASTSET"));
 	my $last_day = ldap_to_unix_time ($entry->get_value("PWDLASTSET")) + $maxage;
-	my $time_left = $last_day - time();
-	if ($time_left > $warning) {
-		$ok{$entry->get_value("PWDLASTSET")} = sprintf ("%s: %s left (%s) ", $entry->get_value("gecos"), get_days ($time_left), ymd ($last_day));
+	if ($entry->get_value("ACCOUNTEXPIRES") == 0)
+	{
+		$ok{$entry->get_value("PWDLASTSET") + unix_to_ldap_time (time ())} = sprintf ("%s: does not expire (%s) ", $entry->get_value("gecos"), ymd ($last_day));
 	}
-	else {
-		$serious = 2 if ($time_left < $critical);
-		$problem{$entry->get_value("PWDLASTSET")} = sprintf ("%s: %s left (%s) ", $entry->get_value("gecos"), get_days ($time_left), ymd ($last_day));
+	else
+	{
+		my $time_left = $last_day - time();
+		if ($time_left > $warning) {
+			$ok{$entry->get_value("PWDLASTSET")} = sprintf ("%s: %s left (%s) ", $entry->get_value("gecos"), get_days ($time_left), ymd ($last_day));
+		}
+		else {
+			$serious = 2 if ($time_left < $critical);
+			$problem{$entry->get_value("PWDLASTSET")} = sprintf ("%s: %s left (%s) ", $entry->get_value("gecos"), get_days ($time_left), ymd ($last_day));
+		}
 	}
 }
 
