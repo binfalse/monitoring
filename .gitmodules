@@ -1,0 +1,9 @@
+[submodule "check_github_fork"]
+	path = check_github_fork
+	url = https://github.com/binfalse/check_github_fork
+[submodule "check_ssl_cert"]
+	path = check_ssl_cert
+	url = https://github.com/binfalse/check_ssl_cert
+[submodule "check_links"]
+	path = check_links
+	url = https://github.com/binfalse/check_links
