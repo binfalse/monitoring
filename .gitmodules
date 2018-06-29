@@ -7,3 +7,6 @@
 [submodule "check_links"]
 	path = check_links
 	url = https://github.com/binfalse/check_links
+[submodule "check_win_updates"]
+	path = check_win_updates
+	url = https://github.com/binfalse/check_win_updates
