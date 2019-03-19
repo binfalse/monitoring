@@ -51,7 +51,7 @@ sub ymd {
 sub usage {
 	my $msg = shift;
 	print $msg . "\n" if $msg;
-	print "Usage: $0 --ldapserver <LDAP SERVER> --ldapbase <LDAP BASE DN> [--max-age <SECONDS>] [--warning <SECONDS>] [--critical <SECONDS>]\n";
+	print "Usage: $0 --ldapserver <LDAP SERVER> --ldapbase <LDAP BASE DN> [--max-age <SECONDS>] [--warning <SECONDS>] [--critical <SECONDS>] [--ignore-expired]\n";
 	print "		max-age in seconds as configured in your institution, defaults to 999*24*60*60 (999 days)\n";
 	print "		warning defaults to 30*24*60*60 (30 days)\n";
 	print "		critical defaults to 5*24*60*60 (5 days)\n";
@@ -64,11 +64,13 @@ my $critical = 5*24*60*60;
 my $maxage = 999*24*60*60;
 my $ldapserver = "";
 my $ldapbase = "";
+my $ignoreexpired = '';
 
 
 GetOptions (
         "ldapserver|s=s" => \$ldapserver,
         "ldapbase|b=s"   => \$ldapbase,
+        "ignore-expired|i" => \$ignoreexpired,
         "max-age|m=s"   => \$maxage,
         "warning|w:i"  => \$warning,
         "critical|c:i"  => \$critical)
@@ -103,6 +105,7 @@ foreach my $entry ($result->entries) {
 	else
 	{
 		my $time_left = $last_day - time();
+        next if ($time_left < 0 and $ignoreexpired);
 		if ($time_left > $warning) {
 			$ok{$entry->get_value("PWDLASTSET")} = sprintf ("%s: %s left (%s) ", $entry->get_value("gecos"), get_days ($time_left), ymd ($last_day));
 		}
