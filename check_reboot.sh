@@ -27,9 +27,15 @@ if [ -f "/var/run/reboot-required" ]
 then
     echo "reboot required!"
     exit 1
+fi
+
+if [ -f "/usr/sbin/needrestart" ]
+then
+    /usr/sbin/needrestart -p
 else
     echo "looks good over here..."
     exit 0
 fi
+
 
 
